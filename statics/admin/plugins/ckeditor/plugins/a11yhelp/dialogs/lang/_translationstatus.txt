@@ -1,0 +1,82 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-widht, height=device-heigh, initial-scale=1.0, maximum-scale=1.0, use-scalable=no">
+    <link href="/statics/css/weixin_api/public.css" type="text/css" rel="stylesheet">
+    <link href="/statics/css/weixin_api/style.css" type="text/css" rel="stylesheet">
+    <script src="/statics/js/jquery.min.js"></script>
+    <title>手机号绑定</title>
+</head>
+<body>
+<div id="wrap">
+    <div class="main">
+        <form class="bangding" method="post" id="vail_form" name="bindsubmit" >
+            <p>
+                <input type="text" name="info[mobile]" value="" placeholder="请输入您的手机号码" onfocus="if(placeholder=='请输入您的手机号码') {value=''}" onblur="if (value=='') {placeholder='请输入您的手机号码'}" id="mobile" />
+            </p>
+            <?php
+                if(isset($scene_id)){
+            ?>
+            <input type="hidden" name="info[scene_id]" value="<?php echo $scene_id;?>" />
+            <?}?>
+            <p class="clearfix">
+                <input class="yzm-input" type="text" value="" placeholder="验证码" onfocus="if(placeholder=='验证码') {value=''}" onblur="if(value==''){placeholder='验证码'}" id="vali_code" name="info[code]" />
+                <a class="yzm-btn" href="javascript:gain_sms_code()">获取动态密码</a></p>
+        </form>
+    </div>
+</div>
+<div class="footer">
+    <a class="footer-tit" href="javascript:vali_mobile()">绑定手机号</a>
+</div>
+<script>
+    function gain_sms_code(){
+        var mobile = $("#mobile").val();
+        if(mobile == ''){
+            alert('请输入手机号码');
+            return;
+        }
+        var pattern=/^[1]{1}[0-9]{1}[0-9]{9}$/;
+        if(!mobile.match(pattern)){
+            alert('请输入正确的手机');
+            return;
+        }
+        $.ajax({
+            type: "POST",
+            url: "<?php echo WX_BASE_URL.'ajax_send_mobile_code';?>",
+            data: "mobile="+$('#mobile').val(),
+            dataType:"json",
+            success: function(msg){
+                if(msg['status'] != 1){
+                    var html_str = '<i class="attention ok"></i>' + msg['info'];
+                    $(".yzm-btn").html(html_str);
+                }else{
+                    $('.yzm-btn').attr('style','background-color:#cbcbcb');
+                    $('.yzm-btn').removeAttr('href');
+                    var html_str = '<i class="attention ok"></i>' + msg['info'];
+                    $(".yzm-btn").html(html_str);
+                }
+            }
+        });
+    }
+    //验证验证码
+    function vali_mobile(){
+        var vali_code = $("#vali_code").val();
+        if(vali_code == ''){
+            alert('验证码不能为空');
+            return;
+        }
+        var pattern=/[0-9]{4}/;
+        if(!vali_code.match(pattern)){
+            alert('请输入4位数字验证码');
+            return;
+        }
+        var vali_url = '<?php echo WX_BASE_URL.'bind_mobile?open_id='.$open_id;?>';
+        $("#vail_form").attr("action",vali_url);
+        $("#vail_form").attr("method",'post');
+        $("#vail_form").submit();
+    }
+
+</script>
+</body>
+</html>
